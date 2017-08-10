@@ -49,7 +49,7 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &rUrl, int rReadpages)
         {
             QString currentLine = GetPartOfString(responseString, lookFor, "</li>");
             QString seoUrl = "https://www.quoka.de/" + GetPartOfString(currentLine, "href=\"/", "\"");
-            QString adid = GetPartOfString(currentLine, "data-qng-submit=\"", "\"");
+            QString adid = GetPartOfString(currentLine, "data-qng-submit=\"", "\"").replace("|","").trimmed();
 
             QString title = GetPartOfString(currentLine, "<h2", "</");
             title = GetPartOfString(title, ">", "");
@@ -108,6 +108,7 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &rUrl, int rReadpages)
             dist = GetPartOfString(dist,">","").trimmed() + " " + GetPartOfString(currentLine,"<span class=\"locality\">","<").trimmed();
 
             QString image = GetPartOfString(currentLine, "data-src=\"", "\"");
+            qInfo() << image;
 
             bool datedone = false;
             QString endDate = "";
@@ -134,12 +135,18 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &rUrl, int rReadpages)
                 QDateTime MyDateTime;
                 try
                 {
-                    startDate = startDate.replace(".17",".2017");
-                    startDate = startDate.replace(".18",".2018");
-                    startDate = startDate.replace(".19",".2019");
-                    startDate = startDate.replace(".20",".2020");
-                    MyDateTime = QDateTime::fromString(startDate, "dd.MM.yyyy");
-                    startDate = MyDateTime.toString("yyyy-MM-dd HH:mm:ss");
+
+                    if (startDate.length() == 8){
+                        startDate = startDate.left(6)+"20"+startDate.right(2);
+                    }
+
+                    startDate = startDate + " 00:00:00";
+
+                    MyDateTime = QDateTime::fromString(startDate , "dd.MM.yyyy HH:mm:ss");
+                    if (MyDateTime.isValid())
+                        startDate = MyDateTime.toString("yyyy-MM-dd HH:mm:ss");
+                    else
+                        qWarning() << "No valid StartTime: " << startDate;
                 }
                 catch (std::exception ex1)
                 {
@@ -149,8 +156,10 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &rUrl, int rReadpages)
                 }
             }
 
-            if (startDate.trimmed() == "")
+            if (startDate.trimmed() == ""){
+                responseString = GetPartOfString(responseString, lookFor, "");
                 continue;
+            }
 
             endDate = CalcEndTime(startDate);
 
