@@ -12,12 +12,12 @@ install:
     - source /opt/qt59/bin/qt59-env.sh
 
 script:
-  - mkdir build
-  - cd build
   - qmake -v
-  - qmake ../QuokaAgent/QuokaAgent.pro
+  - qmake QuokaAgent/QuokaAgent.pro
+  - cd QuokaAgent
   - make -j4
+  - cd ..
   
 after_success:
   - pwd
-  - curl --upload-file ./build/libQuokaAgent.so https://transfer.sh/libQuokaAgent.so
+  - curl --upload-file ./build/release/linux/libQuokaAgent.so https://transfer.sh/libQuokaAgent.so
