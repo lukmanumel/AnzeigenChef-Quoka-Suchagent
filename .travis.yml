@@ -14,7 +14,6 @@ install:
 script:
   - qmake -v
   - qmake QuokaAgent/QuokaAgent.pro
-  - cd QuokaAgent
   - make -j4
   - cd ..
   
