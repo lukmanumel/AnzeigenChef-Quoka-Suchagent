@@ -41,3 +41,4 @@ script:
     - export CMAKE_PREFIX_PATH=$PWD/Qt/5.9.1/gcc_64/lib/cmake ;
       cd .. ;
       pwd;
+    - $PWD/Qt/5.9.1/gcc_64/bin/qmake CONFIG+=release ./QuokaAgent/QuokaAgent.pro
