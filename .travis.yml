@@ -1,7 +1,7 @@
-language: none
+language: c++
 compiler: gcc
 sudo: require
-dist: trusty
+dist: precise
 
 before_install:
     - sudo add-apt-repository ppa:beineri/opt-qt591-trusty -y
@@ -18,4 +18,5 @@ script:
   - make -j4
   
 after_success:
-  - curl --upload-file ./libQuokaAgent.so https://transfer.sh/libQuokaAgent.$(git rev-parse --short HEAD).so
+  - pwd
+  - curl --upload-file ./build/libQuokaAgent.so https://transfer.sh/libQuokaAgent.$(git rev-parse --short HEAD).so
