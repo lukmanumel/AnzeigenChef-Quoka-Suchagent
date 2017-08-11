@@ -14,9 +14,10 @@ install:
 script:
   - mkdir build
   - cd build
+  - qmake -v
   - qmake ../QuokaAgent/QuokaAgent.pro
   - make -j4
   
 after_success:
   - pwd
-  - curl --upload-file ./build/libQuokaAgent.so https://transfer.sh/libQuokaAgent.$(git rev-parse --short HEAD).so
+  - curl --upload-file ./build/libQuokaAgent.so https://transfer.sh/libQuokaAgent.so
