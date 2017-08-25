@@ -27,6 +27,9 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &rUrl, int rReadpages)
 
     while(hasNext && page < rReadpages){
 
+        if (!qApp->property("AppDown").isNull())
+            return resultList;
+
         QThread::msleep(1000);
         hasNext = false;
         QString responseString = GetHtmlSourceCode(currentUrl, QUrlQuery());
@@ -47,6 +50,9 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &rUrl, int rReadpages)
 
         while (responseString.contains(lookFor))
         {
+            if (!qApp->property("AppDown").isNull())
+                return resultList;
+
             QString currentLine = GetPartOfString(responseString, lookFor, "</li>");
             QString seoUrl = "https://www.quoka.de/" + GetPartOfString(currentLine, "href=\"/", "\"");
             QString adid = GetPartOfString(currentLine, "data-qng-submit=\"", "\"").replace("|","").trimmed();
@@ -66,7 +72,7 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &rUrl, int rReadpages)
 
             PriceType priceType = PriceType::Negotiating;
 
-            /*
+            /* Quoka does not shown the Pricetype
             if (price.contains("VB") && price.contains("€"))
             {
                 priceType = PriceType::Negotiating;
