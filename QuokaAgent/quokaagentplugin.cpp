@@ -1,5 +1,8 @@
 #include "quokaagentplugin.h"
 #include <QNetworkReply>
+#include <QNetworkCookieJar>
+
+typedef QPair<QByteArray, QByteArray> RawHeaderPair;
 
 /**
  * @brief QuokaAgentPlugin::QuokaAgentPlugin
@@ -15,17 +18,17 @@ QuokaAgentPlugin::QuokaAgentPlugin(QObject *parent) { Q_UNUSED(parent); }
  *
  * @return QList<SearchResult>: List of SearchResult
  */
-QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &rUrl, int rReadpages)
+QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &url, int readpages)
 {
     QList<SearchResult> resultList;
 
     int page = 1;
-    QString currentUrl = rUrl.toString();
+    QString currentUrl = url.toString();
     bool hasNext = true;
     QString hasNextUrl;
     QString lookFor = "q-ln hlisting";
 
-    while(hasNext && page < rReadpages){
+    while(hasNext && page < readpages){
 
         if (!qApp->property("AppDown").isNull())
             return resultList;
@@ -204,24 +207,24 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &rUrl, int rReadpages)
  * @param rToString End of part
  * @return SubString of begin and end, return empty String if not found
  */
-QString QuokaAgentPlugin::GetPartOfString(const QString &rSourceString, const QString &rFromString, const QString &rToString)
+QString QuokaAgentPlugin::GetPartOfString(const QString &sourceString, const QString &fromString, const QString &toString)
 {
-    QString src = rSourceString;
+    QString src = sourceString;
 
     if (src.isEmpty())
         return "";
 
     int start = 0;
-    if (rFromString != "")
+    if (fromString != "")
     {
-        start = src.indexOf(rFromString);
+        start = src.indexOf(fromString);
         if (start >= 0)
         {
-            start += rFromString.length();
+            start += fromString.length();
             int end = src.length();
-            if (rToString != "")
+            if (toString != "")
             {
-                end = src.indexOf(rToString, start);
+                end = src.indexOf(toString, start);
                 if (end < 0) return "";
             }
             return src.mid(start, end - start);
@@ -234,9 +237,9 @@ QString QuokaAgentPlugin::GetPartOfString(const QString &rSourceString, const QS
     else
     {
         int end = src.length();
-        if (rToString != "")
+        if (toString != "")
         {
-            end = src.indexOf(rToString, start + rFromString.length());
+            end = src.indexOf(toString, start + fromString.length());
             if (end < 0) return "";
         }
         if (end - start < 0)
@@ -253,23 +256,23 @@ QString QuokaAgentPlugin::GetPartOfString(const QString &rSourceString, const QS
  * @param rPost Any Postfields if needed, else use GET
  * @return HTML Source Code
  */
-QString QuokaAgentPlugin::GetHtmlSourceCode(const QString &rUrl, const QUrlQuery &rPost)
+QString QuokaAgentPlugin::GetHtmlSourceCode(const QString &url, const QUrlQuery &post)
 {
     QNetworkAccessManager manager;
 
-    QUrl uri(rUrl);
+    QUrl uri(url);
     QEventLoop eventLoop;
 
     QNetworkRequest request(uri);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    request.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.20 (KHTML, like Gecko) Chrome/11.0.672.2 Safari/534.20");
+    request.setHeader(QNetworkRequest::UserAgentHeader, userAgent);
 
     QObject::connect(&manager, SIGNAL(finished(QNetworkReply*)), &eventLoop, SLOT(quit()));
     QNetworkReply *reply;
-    if (rPost.isEmpty())
+    if (post.isEmpty())
         reply = manager.get(request);
     else
-        reply = manager.post(request,rPost.toString(QUrl::FullyEncoded).toUtf8());
+        reply = manager.post(request,post.toString(QUrl::FullyEncoded).toUtf8());
     eventLoop.exec();
 
     QString responseString = "";
@@ -291,14 +294,14 @@ QString QuokaAgentPlugin::GetHtmlSourceCode(const QString &rUrl, const QUrlQuery
  * @param rCustomDateString Any DateTime String
  * @return Formatted DateTime yyyy-MM-dd HH:mm:ss
  */
-QString QuokaAgentPlugin::FixDateTime(const QString &rCustomDateString)
+QString QuokaAgentPlugin::FixDateTime(const QString &customDateString)
 {
-    if (!rCustomDateString.contains("T") && !rCustomDateString.contains("+"))
-        return rCustomDateString;
+    if (!customDateString.contains("T") && !customDateString.contains("+"))
+        return customDateString;
 
-    QString dateTime = rCustomDateString.left(23);
+    QString dateTime = customDateString.left(23);
     dateTime = dateTime.replace("T"," ");
-    int timezoneOffset = rCustomDateString.right(5).left(3).toInt();
+    int timezoneOffset = customDateString.right(5).left(3).toInt();
 
     QDateTime timeConvertor = QDateTime::fromString(dateTime, "yyyy-MM-dd HH:mm:ss.zzz");
 
@@ -307,7 +310,7 @@ QString QuokaAgentPlugin::FixDateTime(const QString &rCustomDateString)
         timeConvertor.setUtcOffset(timezoneOffset * 3600);
         return timeConvertor.toString("yyyy-MM-dd HH:mm:ss");
     } else {
-        qWarning() << "fixDateTime throws an exception with format " << rCustomDateString << ", return today";
+        qWarning() << "fixDateTime throws an exception with format " << customDateString << ", return today";
         return QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
     }
 }
@@ -317,16 +320,16 @@ QString QuokaAgentPlugin::FixDateTime(const QString &rCustomDateString)
  * @param rFromString Calc endtime from starttime
  * @return Formatted EndTime String, yyyy-MM-dd HH:mm:ss
  */
-QString QuokaAgentPlugin::CalcEndTime(const QString &rFromString)
+QString QuokaAgentPlugin::CalcEndTime(const QString &fromString)
 {
-    QString fixdate = FixDateTime(rFromString);
+    QString fixdate = FixDateTime(fromString);
 
     QDateTime f = QDateTime::fromString(fixdate,"yyyy-MM-dd HH:mm:ss");
 
     if (f.isNull() || !f.isValid())
     {
         f = QDateTime::currentDateTime();
-        qWarning() << "calcEbayEndTime throws an exception " << rFromString << " fixdate " << fixdate;
+        qWarning() << "calcEbayEndTime throws an exception " << fromString << " fixdate " << fixdate;
     }
 
     while(f < QDateTime::currentDateTime())
@@ -340,9 +343,9 @@ QString QuokaAgentPlugin::CalcEndTime(const QString &rFromString)
  * @param rFromString String to clean HTML Tags
  * @return Clean String
  */
-QString QuokaAgentPlugin::FixHtml(const QString &rFromString)
+QString QuokaAgentPlugin::FixHtml(const QString &fromString)
 {
-    QString returnString = rFromString;
+    QString returnString = fromString;
     returnString = returnString.replace("&euro;","€");
     returnString = returnString.replace("&uuml;","ü");
     returnString = returnString.replace("&Uuml;","Ü");
@@ -399,4 +402,88 @@ QString QuokaAgentPlugin::GetCustomerHelpMessage()
     return infoText.join("<br>");
 }
 
+/**
+ * @brief QuokaAgentPlugin::SendQuestionToAdOwner
+ *
+ * You must implement your own login and sending process
+ *
+ * @param accountUsername Username of the selected account at AnzeigenChef
+ * @param accountPassword Password of the selected account at AnzeigenChef
+ * @param myName Name of the sender
+ * @param myPhone Phone of the sender
+ * @param advertId Platform id
+ * @return true if the message was sent successfully
+ */
+bool QuokaAgentPlugin::SendQuestionToAdOwner(const QString &accountUsername, const QString &accountPassword, const QString &myName, const QString &myPhone, const QString &advertId)
+{
+    QNetworkAccessManager manager(this);
+    QNetworkCookieJar CookieJar(this);
+    manager.setCookieJar(&CookieJar);
+
+    if (Login(accountUsername,accountPassword,&manager))
+    {
+        // ToDo: 1. Get html source of ad site
+        //       2. Read all hidden form fields, Quoka has security mask fields like name="5cf4ca3e637ecf3d1c6ce0049d14404e"
+        //       3. Find correct textarea, name, phone
+        //       4. Send
+    } else {
+        qWarning() << GetPlatformName() << " Plugin fails with:" << pLastError;
+        return false; // pLastError
+    }
+}
+
+
+bool QuokaAgentPlugin::Login(const QString &username, const QString &password, QNetworkAccessManager *manager)
+{
+    pLastError = "";
+
+    QEventLoop eventLoop2;
+    QUrlQuery postData;
+    postData.addQueryItem("loginname", username);
+    postData.addQueryItem("password", QString(password).replace("+","%2B"));
+    postData.addQueryItem("permanent","1");
+
+    QNetworkRequest request2(QUrl("https://www.quoka.de/mein-konto/login.html"));
+    request2.setHeader(QNetworkRequest::UserAgentHeader, userAgent);
+    request2.setRawHeader("Referer", "https://www.quoka.de");
+    request2.setRawHeader("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+    request2.setRawHeader("Accept-Language","de-DE");
+    request2.setRawHeader("Accept-Charset", "ISO-8859-1,utf-8;q=0.7,*;q=0.7" );
+    request2.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    QList<RawHeaderPair> responseHeaders;
+
+    QObject::connect(manager, SIGNAL(finished(QNetworkReply*)), &eventLoop2, SLOT(quit()));
+    QNetworkReply *reply2 = manager->post(request2,postData.toString(QUrl::FullyEncoded).toUtf8());
+    eventLoop2.exec();
+
+    QString responseString;
+    auto error_type = reply2->error();
+    if (error_type == QNetworkReply::NoError) {
+        responseString = reply2->readAll();
+        responseHeaders = reply2->rawHeaderPairs();
+    } else {
+        pLastError = tr("Login nicht möglich: %1").arg(reply2->errorString());
+    }
+
+     bool isOK = false;
+     QStringList infoHeader;
+
+     foreach(RawHeaderPair x, responseHeaders){
+         infoHeader.append(x.first + ": " + x.second);
+         if (x.first.trimmed() == "Location"){
+             if (x.second.trimmed() == "/mein-konto/startseite.html" || "/mein-konto/online-anzeigen.html"){
+                 isOK = true;
+                 break;
+             }
+         }
+     }
+
+    reply2->deleteLater();
+
+    if (!isOK)
+        pLastError = tr("Der Login bei Quoka war nicht möglich, bitte Zugangsdaten prüfen");
+
+    return isOK;
+}
 
