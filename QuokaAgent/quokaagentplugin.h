@@ -29,6 +29,7 @@ public:
     QString GetPlatformHash() override;
     QString GetLastError() override;
     QString GetCustomerHelpMessage() override;
+    QString GetPlatformLetters() override;
     bool SendQuestionToAdOwner(const QString &accountUsername, const QString &accountPassword, const QString &myName, const QString &myPhone, const QString &advertId) override;
 };
 

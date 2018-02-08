@@ -30,7 +30,7 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &url, int readpages)
 
     while(hasNext && page < readpages){
 
-        if (!qApp->property("AppDown").isNull())
+        if (qApp->property("AppDown").toInt() == 1)
             return resultList;
 
         QThread::msleep(1000);
@@ -53,7 +53,7 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &url, int readpages)
 
         while (responseString.contains(lookFor))
         {
-            if (!qApp->property("AppDown").isNull())
+            if (qApp->property("AppDown").toInt() == 1)
                 return resultList;
 
             QString currentLine = GetPartOfString(responseString, lookFor, "</li>");
@@ -402,6 +402,11 @@ QString QuokaAgentPlugin::GetCustomerHelpMessage()
     infoText.append("https://www.quoka.de/alle-rubriken/kleinanzeigen.html?search1=<b>TEST</b>&city=<b>PLZ</b>&radius=<b>50</b>");
     infoText.append("TEST ist der Suchbegriff, PLZ die Postleitzahl, 50 der Radius");
     return infoText.join("<br>");
+}
+
+QString QuokaAgentPlugin::GetPlatformLetters()
+{
+    return "Q";
 }
 
 /**

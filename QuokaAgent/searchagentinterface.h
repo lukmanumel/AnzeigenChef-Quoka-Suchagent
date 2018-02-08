@@ -45,6 +45,7 @@ public:
     virtual QString GetPlatformHash() = 0;
     virtual QString GetLastError() = 0;
     virtual QString GetCustomerHelpMessage() = 0;
+    virtual QString GetPlatformLetters() = 0;
     virtual bool SendQuestionToAdOwner(const QString &accountUsername, const QString &accountPassword, const QString &myName, const QString &myPhone, const QString &advertId) = 0;
 };
 
