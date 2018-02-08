@@ -152,10 +152,12 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &url, int readpages)
                     startDate = startDate + " 00:00:00";
 
                     MyDateTime = QDateTime::fromString(startDate , "dd.MM.yyyy HH:mm:ss");
-                    if (MyDateTime.isValid())
+                    if (!MyDateTime.isNull() && MyDateTime.isValid())
                         startDate = MyDateTime.toString("yyyy-MM-dd HH:mm:ss");
-                    else
+                    else {
                         qWarning() << "No valid StartTime: " << startDate;
+                        startDate = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
+                    }
                 }
                 catch (std::exception ex1)
                 {
@@ -175,7 +177,7 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &url, int readpages)
             title = FixHtml(title);
             dist = FixHtml(dist);
 
-            if ((title != "" || dist != "") && title != "{{name}}")
+            if ((!title.isEmpty() || !dist.isEmpty()) && title != "{{name}}")
             {
                 SearchResult newSearchResult;
                 newSearchResult.AdDescription = FixHtml(desc).trimmed();
