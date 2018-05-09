@@ -12,6 +12,15 @@
 
 #include <QtCore>
 
+enum PriceType
+{
+    Negotiating = 1, // VB @eBay
+    FixPrice = 0,
+    GiveAway = 2,
+    Trade = 3, // Only markt.de
+    BestPrice = 4 // Only markt.de
+};
+
 class SearchResult
 {
 public:
@@ -24,16 +33,7 @@ public:
     QString AdImageUrl;
     QString AdDistance;
     int AdPrice = 0;
-    int AdPriceType = 0;
-};
-
-enum PriceType
-{
-    Negotiating = 1, // VB @eBay
-    FixPrice = 0,
-    GiveAway = 2,
-    Trade = 3, // Only markt.de
-    BestPrice = 4 // Only markt.de
+    PriceType AdPriceType = PriceType::Negotiating;
 };
 
 class SearchAgentInterface

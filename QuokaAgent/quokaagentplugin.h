@@ -21,6 +21,7 @@ private:
     QString CalcEndTime(const QString& fromString);
     QString FixHtml(const QString& fromString);
     bool Login(const QString &username, const QString &password, QNetworkAccessManager *manager);
+    QMap<QString, QString> GetListOfFields(QString fromString);
 
 public:
     QuokaAgentPlugin(QObject *parent = 0);

@@ -433,10 +433,47 @@ bool QuokaAgentPlugin::SendQuestionToAdOwner(const QString &accountUsername, con
         //       2. Read all hidden form fields, Quoka has security mask fields like name="5cf4ca3e637ecf3d1c6ce0049d14404e"
         //       3. Find correct textarea, name, phone
         //       4. Send
-    } else {
+        QUrlQuery q;
+        QString siteCode = GetHtmlSourceCode("https://www.quoka.de/index.php?controller=ajax&action=searchmailcontactform&adno="+advertId+"&catid=51_5850&entry_action=detail", q);
+        qInfo() << siteCode;
+        QMap<QString,QString> fieldList = GetListOfFields(siteCode);
+
+        foreach(const QString &key, fieldList.keys())
+        {
+            // postData.addQueryItem(key,fieldList[key]);
+            qInfo() << "add " << key << " with " << fieldList[key];
+        }
+
+        return true;
+    }
+    else
+    {
         qWarning() << GetPlatformName() << " Plugin fails with:" << pLastError;
         return false; // pLastError
     }
+}
+
+/**
+ * @brief QuokaAgentPlugin::GetListOfFields
+ * @param fromString HTML source code
+ * @return A map with all fields
+ */
+QMap<QString, QString> QuokaAgentPlugin::GetListOfFields(QString fromString)
+{
+    QMap<QString, QString> result;
+    while (fromString.contains("<input "))
+    {
+       QString inputElement = GetPartOfString(fromString,"<input",">");
+       fromString.remove(0,fromString.indexOf("<input ")+7);
+
+       QString fieldname = GetPartOfString(inputElement,"name=\"","\"");
+       QString value = GetPartOfString(inputElement,"value=\"","\"");
+
+       if (!fieldname.isEmpty() && !value.isEmpty())
+        result.insert(fieldname, value);
+    }
+
+    return result;
 }
 
 
