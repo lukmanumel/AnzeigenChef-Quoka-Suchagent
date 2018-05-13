@@ -1,6 +1,7 @@
 #include "quokaagentplugin.h"
 #include <QNetworkReply>
 #include <QNetworkCookieJar>
+#include <QColor>
 
 typedef QPair<QByteArray, QByteArray> RawHeaderPair;
 
@@ -402,6 +403,15 @@ QString QuokaAgentPlugin::GetCustomerHelpMessage()
     infoText.append("https://www.quoka.de/alle-rubriken/kleinanzeigen.html?search1=<b>TEST</b>&city=<b>PLZ</b>&radius=<b>50</b>");
     infoText.append("TEST ist der Suchbegriff, PLZ die Postleitzahl, 50 der Radius");
     return infoText.join("<br>");
+}
+
+/**
+ * @brief QuokaAgentPlugin::GetPlatformColor
+ * @return Platformlabel color
+ */
+QColor QuokaAgentPlugin::GetPlatformColor()
+{
+    return QColor::fromRgb(0,0,255);
 }
 
 QString QuokaAgentPlugin::GetPlatformLetters()

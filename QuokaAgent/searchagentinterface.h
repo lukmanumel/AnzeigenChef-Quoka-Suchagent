@@ -42,6 +42,7 @@ public:
     virtual ~SearchAgentInterface() {}
     virtual QList<SearchResult> Search(const QUrl& rUrl, int rReadpages) = 0;
     virtual QString GetPlatformName() = 0;
+    virtual QColor GetPlatformColor() = 0;
     virtual QString GetPlatformHash() = 0;
     virtual QString GetLastError() = 0;
     virtual QString GetCustomerHelpMessage() = 0;
