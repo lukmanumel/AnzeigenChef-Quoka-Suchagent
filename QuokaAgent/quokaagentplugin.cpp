@@ -38,6 +38,9 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &url, int readpages)
         hasNext = false;
         QString responseString = GetHtmlSourceCode(currentUrl, QUrlQuery());
 
+        if (responseString.contains("Leider konnten wir keine Anzeige finden"))
+            break;
+
         if (responseString.contains("arr-rgt active\""))
         {
             hasNext = true;
