@@ -121,7 +121,6 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &url, int readpages)
             dist = GetPartOfString(dist,">","").trimmed() + " " + GetPartOfString(currentLine,"<span class=\"locality\">","<").trimmed();
 
             QString image = GetPartOfString(currentLine, "data-src=\"", "\"");
-            qInfo() << image;
 
             bool datedone = false;
             QString endDate = "";
@@ -414,7 +413,7 @@ QString QuokaAgentPlugin::GetCustomerHelpMessage()
  */
 QColor QuokaAgentPlugin::GetPlatformColor()
 {
-    return QColor::fromRgb(0,0,255);
+    return QColor::fromRgb(124, 171, 221);
 }
 
 QString QuokaAgentPlugin::GetPlatformLetters()
