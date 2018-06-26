@@ -29,8 +29,8 @@ QList<SearchResult> QuokaAgentPlugin::Search(const QUrl &url, int readpages)
     QString hasNextUrl;
     QString lookFor = "q-ln hlisting";
 
-    while(hasNext && page < readpages){
-
+    while(hasNext && page < readpages)
+    {
         if (qApp->property("AppDown").toInt() == 1)
             return resultList;
 
@@ -289,7 +289,6 @@ QString QuokaAgentPlugin::GetHtmlSourceCode(const QString &url, const QUrlQuery 
     }
 
     delete reply;
-    manager.deleteLater();
 
     return responseString;
 }
